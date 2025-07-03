@@ -1,0 +1,53 @@
+{
+  "about": {
+    "homepage": "https://www.ladle.dev",
+    "github": "https://github.com/tajo/ladle",
+    "version": 1
+  },
+  "stories": {
+    "vega-embed--basic": {
+      "name": "Basic",
+      "levels": [
+        "Vega embed"
+      ],
+      "locStart": 4,
+      "locEnd": 58,
+      "filePath": "src/VegaEmbed.stories.tsx",
+      "namedExport": "Basic",
+      "meta": {}
+    },
+    "vega-embed--changing-dimensions": {
+      "name": "Changing dimensions",
+      "levels": [
+        "Vega embed"
+      ],
+      "locStart": 129,
+      "locEnd": 159,
+      "filePath": "src/VegaEmbed.stories.tsx",
+      "namedExport": "ChangingDimensions",
+      "meta": {}
+    },
+    "vega-embed--vega": {
+      "name": "Vega",
+      "levels": [
+        "Vega embed"
+      ],
+      "locStart": 116,
+      "locEnd": 127,
+      "filePath": "src/VegaEmbed.stories.tsx",
+      "namedExport": "Vega",
+      "meta": {}
+    },
+    "vega-embed--vega-lite": {
+      "name": "Vega lite",
+      "levels": [
+        "Vega embed"
+      ],
+      "locStart": 60,
+      "locEnd": 114,
+      "filePath": "src/VegaEmbed.stories.tsx",
+      "namedExport": "VegaLite",
+      "meta": {}
+    }
+  }
+}
