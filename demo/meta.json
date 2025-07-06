@@ -10,8 +10,8 @@
       "levels": [
         "Vega embed"
       ],
-      "locStart": 4,
-      "locEnd": 58,
+      "locStart": 33,
+      "locEnd": 40,
       "filePath": "src/VegaEmbed.stories.tsx",
       "namedExport": "Basic",
       "meta": {}
@@ -21,10 +21,21 @@
       "levels": [
         "Vega embed"
       ],
-      "locStart": 129,
-      "locEnd": 159,
+      "locStart": 111,
+      "locEnd": 147,
       "filePath": "src/VegaEmbed.stories.tsx",
       "namedExport": "ChangingDimensions",
+      "meta": {}
+    },
+    "vega-embed--controlled": {
+      "name": "Controlled",
+      "levels": [
+        "Vega embed"
+      ],
+      "locStart": 149,
+      "locEnd": 234,
+      "filePath": "src/VegaEmbed.stories.tsx",
+      "namedExport": "Controlled",
       "meta": {}
     },
     "vega-embed--vega": {
@@ -32,8 +43,8 @@
       "levels": [
         "Vega embed"
       ],
-      "locStart": 116,
-      "locEnd": 127,
+      "locStart": 98,
+      "locEnd": 109,
       "filePath": "src/VegaEmbed.stories.tsx",
       "namedExport": "Vega",
       "meta": {}
@@ -43,8 +54,8 @@
       "levels": [
         "Vega embed"
       ],
-      "locStart": 60,
-      "locEnd": 114,
+      "locStart": 42,
+      "locEnd": 96,
       "filePath": "src/VegaEmbed.stories.tsx",
       "namedExport": "VegaLite",
       "meta": {}
