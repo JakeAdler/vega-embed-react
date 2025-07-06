@@ -1,6 +1,6 @@
 import React from "react";
 import { useVegaEmbed, VegaEmbed } from "./VegaEmbed";
-import type { VisualizationSpec } from "vega-embed";
+import { vega, type VisualizationSpec } from "vega-embed";
 
 const BasicSpec: VisualizationSpec = {
   $schema: "https://vega.github.io/schema/vega-lite/v6.json",
@@ -31,12 +31,7 @@ const BasicSpec: VisualizationSpec = {
 };
 
 export const Basic = () => {
-  return (
-    <VegaEmbed
-      spec={BasicSpec}
-    /
-    >
-  );
+  return <VegaEmbed spec={BasicSpec} />;
 };
 
 export const VegaLite = () => {
@@ -111,7 +106,7 @@ export const Vega = () => {
 export const ChangingDimensions = () => {
   const ref = React.useRef<HTMLDivElement>(null);
 
-  const result = useVegaEmbed({
+  const vegaEmbed = useVegaEmbed({
     ref,
     spec: {
       ...BasicSpec,
@@ -121,7 +116,7 @@ export const ChangingDimensions = () => {
   });
 
   React.useEffect(() => {
-    if (!result) return;
+    if (!vegaEmbed) return;
     const FLOOR = 200;
     const CEILING = 600;
 
@@ -138,32 +133,26 @@ export const ChangingDimensions = () => {
       width = width + (direction === "up" ? 1 : -1);
       height = height + (direction === "up" ? 1 : -1);
 
-      result.view.width(width).height(height).runAsync();
+      vegaEmbed.view.width(width).height(height).runAsync();
     }, 10);
     return () => clearInterval(interval);
-  }, [result]);
+  }, [vegaEmbed]);
 
   return <div ref={ref} />;
 };
 
 export const Controlled = () => {
-  const [height, setHeight] = React.useState(400);
-  const [width, setWidth] = React.useState(400);
-  const [data, setData] = React.useState(makeRandomData());
-
   const embedEl = React.useRef<HTMLDivElement>(null);
 
-  const result = useVegaEmbed({
+  const vegaEmbed = useVegaEmbed({
     ref: embedEl,
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v6.json",
-      data: { name: "values" },
-      width: "container",
-      height: "container",
-      autosize: {
-        type: "fit",
-        contains: "padding",
+      data: {
+        name: "values",
       },
+      width: 400,
+      height: 400,
       params: [{ name: "selection", select: { type: "point", fields: ["a"] } }],
       mark: "bar",
       encoding: {
@@ -176,9 +165,13 @@ export const Controlled = () => {
         },
       },
     },
+    onEmbed: (embed) => {
+      makeRandomData(embed);
+    },
   });
 
-  function makeRandomData() {
+  function makeRandomData(embed: typeof vegaEmbed) {
+    if (!embed) return;
     const values: any[] = [];
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     for (let i = 0; i < 9; i++) {
@@ -187,47 +180,42 @@ export const Controlled = () => {
         b: Math.floor(Math.random() * 100),
       });
     }
-    return { values };
+    const newData = { values };
+    embed.view.data("values", newData.values).runAsync();
   }
-
-  React.useEffect(() => {
-    if (!result) return;
-    result.view.data("values", data.values).runAsync();
-  }, [data, result]);
-
-  React.useEffect(() => {
-    if (!result) return;
-    result.view.width(width).height(height).runAsync();
-  }, [result, width, height]);
 
   return (
     <div>
-      <div>
+      {vegaEmbed && (
         <div>
-          <label>Height</label>
-          <input
-            style={{ display: "inline-block", marginLeft: "8px" }}
-            value={height}
-            onChange={(e) =>
-              Number(e.target.value) && setHeight(Number(e.target.value))
-            }
-          />
+          <div>
+            <label>Height</label>
+            <input
+              style={{ display: "inline-block", marginLeft: "8px" }}
+              onChange={(e) =>
+                Number(e.target.value) &&
+                vegaEmbed.view.height(Number(e.target.value)).runAsync()
+              }
+            />
+          </div>
+          <div>
+            <label>Width</label>
+            <input
+              style={{ display: "inline-block", marginLeft: "8px" }}
+              onChange={(e) =>
+                Number(e.target.value) &&
+                vegaEmbed.view.width(Number(e.target.value)).runAsync()
+              }
+            />
+          </div>
+          <button
+            style={{ display: "block", marginTop: "8px" }}
+            onClick={() => makeRandomData(vegaEmbed)}
+          >
+            Randomize Data
+          </button>
         </div>
-        <label>Width</label>
-        <input
-          style={{ display: "inline-block", marginLeft: "8px" }}
-          value={width}
-          onChange={(e) =>
-            Number(e.target.value) && setWidth(Number(e.target.value))
-          }
-        />
-        <button
-          style={{ display: "block", marginTop: "8px" }}
-          onClick={() => setData(makeRandomData())}
-        >
-          Randomize Data
-        </button>
-      </div>
+      )}
       <div ref={embedEl} />
     </div>
   );
