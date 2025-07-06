@@ -1,59 +1,41 @@
 import React from "react";
-import { VegaEmbed } from "./VegaEmbed";
+import { useVegaEmbed, VegaEmbed } from "./VegaEmbed";
+import type { VisualizationSpec } from "vega-embed";
 
-export const Basic = ({
-  width,
-  height,
-}: {
-  width?: number;
-  height?: number;
-}) => {
+const BasicSpec: VisualizationSpec = {
+  $schema: "https://vega.github.io/schema/vega-lite/v6.json",
+  data: {
+    values: [
+      { a: "A", b: 28 },
+      { a: "B", b: 55 },
+      { a: "C", b: 43 },
+      { a: "D", b: 91 },
+      { a: "E", b: 81 },
+      { a: "F", b: 53 },
+      { a: "G", b: 19 },
+      { a: "H", b: 87 },
+      { a: "I", b: 52 },
+    ],
+  },
+  params: [{ name: "selection", select: { type: "point", fields: ["b"] } }],
+  mark: "bar",
+  encoding: {
+    x: { field: "a", type: "ordinal" },
+    y: { field: "b", type: "quantitative" },
+    tooltip: { field: "b", type: "quantitative" },
+    color: {
+      condition: { param: "selection", value: "steelblue" },
+      value: "grey",
+    },
+  },
+};
+
+export const Basic = () => {
   return (
     <VegaEmbed
-      height={height || 400}
-      width={width || 400}
-      data={{
-        values: [
-          { a: "A", b: 28 },
-          { a: "B", b: 55 },
-          { a: "C", b: 43 },
-          { a: "D", b: 91 },
-          { a: "E", b: 81 },
-          { a: "F", b: 53 },
-          { a: "G", b: 19 },
-          { a: "H", b: 87 },
-          { a: "I", b: 52 },
-        ],
-      }}
-      spec={{
-        $schema: "https://vega.github.io/schema/vega-lite/v6.json",
-        width: "container",
-        height: "container",
-        autosize: {
-          type: "fit",
-          contains: "padding",
-        },
-        data: {
-          name: "values",
-        },
-        params: [
-          { name: "selection", select: { type: "point", fields: ["b"] } },
-        ],
-        mark: "bar",
-        encoding: {
-          x: { field: "a", type: "ordinal" },
-          y: { field: "b", type: "quantitative" },
-          tooltip: { field: "b", type: "quantitative" },
-          color: {
-            condition: { param: "selection", value: "steelblue" },
-            value: "grey",
-          },
-        },
-      }}
-      options={{
-        mode: "vega-lite",
-      }}
-    />
+      spec={BasicSpec}
+    /
+    >
   );
 };
 
@@ -127,33 +109,126 @@ export const Vega = () => {
 };
 
 export const ChangingDimensions = () => {
-  const FLOOR = 200;
-  const CEILING = 600;
+  const ref = React.useRef<HTMLDivElement>(null);
 
-  const [dimensions, setDimensions] = React.useState({
-    width: 400,
-    height: 400,
-    direction: "up",
+  const result = useVegaEmbed({
+    ref,
+    spec: {
+      ...BasicSpec,
+      width: "container",
+      height: "container",
+    },
   });
 
   React.useEffect(() => {
+    if (!result) return;
+    const FLOOR = 200;
+    const CEILING = 600;
+
+    let width = 400;
+    let height = 400;
+    let direction = "up";
+
     const interval = setInterval(() => {
-      setDimensions((prev) => {
-        let direction = prev.direction;
-        if (prev.width + 1 === CEILING) {
-          direction = "down";
-        } else if (prev.width - 1 === FLOOR) {
-          direction = "up";
-        }
-        return {
-          width: prev.width + (direction === "up" ? 1 : -1),
-          height: prev.height + (direction === "up" ? 1 : -1),
-          direction,
-        };
-      });
+      if (width + 1 >= CEILING) {
+        direction = "down";
+      } else if (width - 1 <= FLOOR) {
+        direction = "up";
+      }
+      width = width + (direction === "up" ? 1 : -1);
+      height = height + (direction === "up" ? 1 : -1);
+
+      result.view.width(width).height(height).runAsync();
     }, 10);
     return () => clearInterval(interval);
-  }, []);
+  }, [result]);
 
-  return <Basic width={dimensions.width} height={dimensions.height} />;
+  return <div ref={ref} />;
+};
+
+export const Controlled = () => {
+  const [height, setHeight] = React.useState(400);
+  const [width, setWidth] = React.useState(400);
+  const [data, setData] = React.useState(makeRandomData());
+
+  const embedEl = React.useRef<HTMLDivElement>(null);
+
+  const result = useVegaEmbed({
+    ref: embedEl,
+    spec: {
+      $schema: "https://vega.github.io/schema/vega-lite/v6.json",
+      data: { name: "values" },
+      width: "container",
+      height: "container",
+      autosize: {
+        type: "fit",
+        contains: "padding",
+      },
+      params: [{ name: "selection", select: { type: "point", fields: ["a"] } }],
+      mark: "bar",
+      encoding: {
+        x: { field: "a", type: "ordinal" },
+        y: { field: "b", type: "quantitative" },
+        tooltip: { field: "b", type: "quantitative" },
+        color: {
+          condition: { param: "selection", value: "steelblue" },
+          value: "grey",
+        },
+      },
+    },
+  });
+
+  function makeRandomData() {
+    const values: any[] = [];
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for (let i = 0; i < 9; i++) {
+      values.push({
+        a: chars[i],
+        b: Math.floor(Math.random() * 100),
+      });
+    }
+    return { values };
+  }
+
+  React.useEffect(() => {
+    if (!result) return;
+    result.view.data("values", data.values).runAsync();
+  }, [data, result]);
+
+  React.useEffect(() => {
+    if (!result) return;
+    result.view.width(width).height(height).runAsync();
+  }, [result, width, height]);
+
+  return (
+    <div>
+      <div>
+        <div>
+          <label>Height</label>
+          <input
+            style={{ display: "inline-block", marginLeft: "8px" }}
+            value={height}
+            onChange={(e) =>
+              Number(e.target.value) && setHeight(Number(e.target.value))
+            }
+          />
+        </div>
+        <label>Width</label>
+        <input
+          style={{ display: "inline-block", marginLeft: "8px" }}
+          value={width}
+          onChange={(e) =>
+            Number(e.target.value) && setWidth(Number(e.target.value))
+          }
+        />
+        <button
+          style={{ display: "block", marginTop: "8px" }}
+          onClick={() => setData(makeRandomData())}
+        >
+          Randomize Data
+        </button>
+      </div>
+      <div ref={embedEl} />
+    </div>
+  );
 };
